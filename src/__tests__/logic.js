@@ -13,24 +13,28 @@ const CounterLogic = {
     count: (state) => state - 1,
   },
   "*": {
-    logs: (state, args) => state.concat(args),
+    logs: (state, args) => {
+      return state.concat(args);
+    },
   },
-  updateOdds: {
+  updateEven: {
     odds: (state, { payload }) => payload,
   },
   // effects
   increaseAsync(payload, { call }) {
     call("increase");
   },
-  flow: [updateOddsSaga],
+  flow: [updateEvenSaga],
 };
 
-function updateOddsSaga({ when, call, get }) {
+function updateEvenSaga({ when, call, get }) {
   return when(
     "increase",
-    call(
-      ({ payload }) => payload % 2 === 0 && call("updateOdds", get().odds + 1)
-    )
+    call(({ payload }) => {
+      if (payload % 2 === 0) {
+        return call("updateEven", get().odds + 1);
+      }
+    })
   );
 }
 
@@ -58,7 +62,7 @@ test("store.call(action, payload)", () => {
     { action: "decrease", payload: 2 },
     { action: "increase", payload: 3 },
     { action: "increase", payload: 4 },
-    { action: "updateOdds", payload: 1 },
+    { action: "updateEven", payload: 1 },
   ]);
   expect(store.get().odds).toBe(1);
   expect(store.get().data).toBe(true);

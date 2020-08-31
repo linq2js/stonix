@@ -3,6 +3,7 @@ import createActionMatcher from "./createActionMatcher";
 import applyMiddleware from "./applyMiddleware";
 import applyLogic from "./applyLogic";
 import createSelector from "./createSelector";
+import { privateAction } from "./types";
 import storeHook from "./useStore";
 import isPromiseLike from "./isPromiseLike";
 import createLoadable from "./createLoadable";
@@ -53,6 +54,17 @@ export default function createStore(
     use,
     select,
     on,
+  };
+  const logicContext = {
+    api,
+    data,
+    on,
+    mergeState,
+    onChange,
+    onDispatch,
+    addSelector,
+    addReducers,
+    addDispatchers,
   };
 
   function get() {
@@ -128,7 +140,7 @@ export default function createStore(
     }
 
     // call reducer
-    const reducerArgs = { action, payload };
+    const reducerArgs = { action, payload, state: currentState };
     const nextState = reducers.reduce(
       (state, reducer) => reducer(state, reducerArgs),
       currentState
@@ -187,6 +199,27 @@ export default function createStore(
     setState(nextState);
   }
 
+  function addDispatchers(...matchers) {
+    matchers.forEach((matcher) => {
+      if (!matcher.actionType && !matcher.actionTypeList) return;
+      const actionTypes = matcher.actionTypeList || [matcher.actionType];
+      // create multiple action dispatchers
+      actionTypes.forEach((actionType) => {
+        if (actionType in store) return;
+        if (actionType[0] !== "_") {
+          store[matcher.actionType] = (payload) =>
+            api.call(actionType, payload);
+        } else {
+          store[actionType] = privateAction;
+        }
+      });
+    });
+  }
+
+  function addReducers() {
+    reducers.push(...arguments);
+  }
+
   function addSelector(key, definition) {
     const isExist = key in selectorMap;
     selectorMap[key] = createSelector(definition, selectorMap);
@@ -209,10 +242,7 @@ export default function createStore(
   }
 
   function use(logic) {
-    applyLogic(
-      { store, data, mergeState, reducers, onChange, onDispatch, addSelector },
-      logic
-    );
+    applyLogic(logicContext, logic);
     return store;
   }
 

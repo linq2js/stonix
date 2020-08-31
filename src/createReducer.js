@@ -1,6 +1,7 @@
 import createActionMatcher from "./createActionMatcher";
 
 export function createReducerFromAction(
+  context,
   action,
   { $, "*": defaultReducer, $mutate, ...reducers }
 ) {
@@ -36,14 +37,16 @@ export function createReducerFromAction(
   );
 }
 
-export function createReducerFromProp(prop, reducers) {
+export function createReducerFromProp(context, prop, reducers) {
   const entries =
     typeof reducers === "function"
       ? [[createActionMatcher("*"), reducers]]
-      : Object.entries(reducers).map(([key, reducer]) => [
-          createActionMatcher(key),
-          reducer,
-        ]);
+      : Object.entries(reducers).map(([key, reducer]) => {
+          const matcher = createActionMatcher(key);
+          context.addDispatchers(matcher);
+          return [matcher, reducer];
+        });
+
   return function (state, args) {
     const { action } = args;
     const currentValue = state[prop];

@@ -70,8 +70,8 @@ const storeLogic = {
   // define init effect, this effect will be called when the logic applied to store
   init() {},
   // define reducer of count state, this reducer will be called whenver any action called
-  "@count"(state, { action, payload }) {
-    return state;
+  "@count"(value, { action, payload, /* store state */ state }) {
+    return value;
   },
   // define increase reducer, this reducer will be called whenever increase action called
   increase: {

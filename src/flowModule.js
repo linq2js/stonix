@@ -17,7 +17,7 @@ export function delay(ms, value) {
       return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -28,7 +28,7 @@ export function when(input, callback = {}) {
       const {
         onDone = noop,
         subscribe,
-        cancellable: parentCancellable
+        cancellable: parentCancellable,
       } = options;
       const cancellable = createCancellable();
       if (parentCancellable) parentCancellable.onCancel(cancellable.cancel);
@@ -45,7 +45,7 @@ export function when(input, callback = {}) {
           onDone(result) {
             cancellable.dispose();
             onDone && onDone(result);
-          }
+          },
         });
       }
 
@@ -90,7 +90,7 @@ export function when(input, callback = {}) {
               { action, payload },
               {
                 ...options,
-                cancellable
+                cancellable,
               }
             );
           } else {
@@ -108,7 +108,7 @@ export function when(input, callback = {}) {
         callback.onSuccess &&
           call(callback.onSuccess)(result, {
             ...options,
-            cancellable
+            cancellable,
           });
 
         if (isMultiple) {
@@ -126,7 +126,7 @@ export function when(input, callback = {}) {
           call(callback.onDone)(undefined, {
             ...options,
             subscribe,
-            cancellable
+            cancellable,
           });
       }
 
@@ -146,7 +146,7 @@ export function when(input, callback = {}) {
             cancellable,
             onDone(payload) {
               handleSuccess(key, index, type, payload);
-            }
+            },
           });
 
           if (propValue && propValue.type === cancellableType) {
@@ -175,7 +175,7 @@ export function when(input, callback = {}) {
       return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -187,12 +187,12 @@ export function pipe(ops) {
       { onDone = noop, cancellable: parentCancellable, ...options } = {}
     ) {
       let index = -1;
-      const cancellale = createCancellable();
+      const cancellable = createCancellable();
 
-      if (parentCancellable) parentCancellable.onCancel(cancellale.cancel);
+      if (parentCancellable) parentCancellable.onCancel(cancellable.cancel);
 
       function next(value) {
-        if (cancellale.cancelled()) return;
+        if (cancellable.cancelled()) return;
 
         index++;
         // end of op list
@@ -204,17 +204,17 @@ export function pipe(ops) {
         if (op.type === flowType) {
           op(value, { ...options, onDone: next });
         } else {
-          // notmal function
-          call(op)(value, { onDone: next, cancellale });
+          // normal function
+          call(op)(value, { onDone: next, cancellable });
         }
       }
 
       next(prev);
 
-      return cancellale;
+      return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -236,7 +236,7 @@ export function call(fn, payloadResolver) {
       const {
         onDone = noop,
         dispatch = noop,
-        cancellable: parentCancellable
+        cancellable: parentCancellable,
       } = options;
       const cancellable = createCancellable();
 
@@ -258,7 +258,7 @@ export function call(fn, payloadResolver) {
       return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -272,7 +272,7 @@ function parallel(ops) {
       onDone(payload);
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -288,13 +288,13 @@ export function latest(fn) {
 
       call(fn)(payload, {
         ...options,
-        cancellable
+        cancellable,
       });
 
       return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }
@@ -310,7 +310,7 @@ export function debounce(ms, fn) {
       const timerId = setTimeout(() => {
         call(fn)(payload, {
           ...options,
-          cancellable
+          cancellable,
         });
       }, ms);
 
@@ -321,7 +321,7 @@ export function debounce(ms, fn) {
       return cancellable;
     },
     {
-      type: flowType
+      type: flowType,
     }
   );
 }

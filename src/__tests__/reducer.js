@@ -76,6 +76,6 @@ test("prop reducer: specific action", () => {
   });
   store.call("increase");
   expect(store.get().count).toBe(1);
-  store.call("decrease");
+  store.decrease();
   expect(store.get().count).toBe(0);
 });
